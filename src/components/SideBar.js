@@ -15,11 +15,14 @@ import AddIcon from "@material-ui/icons/Add";
 import SidebarOption from "./SidebarOption";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { collection } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 function SideBar() {
   const roomsCol = collection(db, "rooms");
   const [channels, loading, error] = useCollection(roomsCol);
+  const [user] = useAuthState(auth);
+
   return (
     <SideBarContainer>
       <SideBarHeader>
@@ -27,7 +30,7 @@ function SideBar() {
           <h2>Slack Clone</h2>
           <h3>
             <FibreManualRecordIcon />
-            Kiran Suvarna
+            {user.displayName}
           </h3>
         </SideBarInfo>
         <CreateIcon />

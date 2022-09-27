@@ -1,12 +1,15 @@
 import { Button } from "@material-ui/core";
 import React, { useState } from "react";
 import styled from "styled-components";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { serverTimestamp } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { ContactsOutlined } from "@material-ui/icons";
 
-function ChatInput({ channelName, channelId }) {
+function ChatInput({ channelName, channelId, chatRef }) {
   const [input, setInput] = useState("");
+  const [user] = useAuthState(auth);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -15,21 +18,30 @@ function ChatInput({ channelName, channelId }) {
       return false;
     }
 
-    const messagesCol = collection(db, "rooms", channelId, "messages");
-    addDoc(messagesCol, {
-      message: input,
-      timestamp: serverTimestamp(),
-      user: "Kiran Suvarna",
-      userImage:
-        "https://www.google.com/url?sa=i&url=https%3A%2F%2Fgithub.com%2FKiranSuvarna&psig=AOvVaw3GHs2oUkMogEpebPIIWnUo&ust=1664289904284000&source=images&cd=vfe&ved=0CAwQjRxqFwoTCMjTlp7ZsvoCFQAAAAAdAAAAABAD",
-    });
+    if (input) {
+      console.log("photo:", user?.photoURL);
+      console.log("name: ", user?.displayName);
+
+      const messagesCol = collection(db, "rooms", channelId, "messages");
+      addDoc(messagesCol, {
+        message: input,
+        timestamp: serverTimestamp(),
+        user: user.displayName,
+        userImage: user.photoURL,
+      });
+
+      chatRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+      setInput("");
+    }
   };
 
   return (
     <ChatInputContainer>
       <form>
         <input
-          placeholder={`Message #ROOM`}
+          placeholder={`Message #${channelName}`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
